@@ -1,0 +1,242 @@
+body {
+   background-color: #107abb;
+   padding: 10px;
+   position: relative;
+}
+
+.widget {
+   display: flex;
+   justify-content: space-between;
+}
+
+.panel {
+   background-color: #dee2e5;
+   width: 33%;
+   height: min-content;
+   border-radius: 6px;
+   padding: 15px;
+   font-family: 'Arial';
+   color: #1e3c4d;
+}
+
+.panel:nth-child(n+2) {
+   margin-left: 15px;  
+}
+
+.header {
+   margin-left: 5px;
+   display: flex;
+   justify-content: space-between;
+}
+
+.header::after {
+   content: "\22EF";
+   vertical-align: super;
+   color: #758892;
+   font-weight: bold;
+}
+
+.status {
+   text-transform: uppercase;
+   font-weight: bold;
+   font-size: 16px;
+   margin: 0;
+}
+
+.cards {
+   list-style: none;
+   padding: 0;
+}
+
+.card {
+   min-height: 15px;
+   margin-top: 10px;
+   padding: 10px;
+   background-color: #ffffff;
+   box-shadow: 0px 1px #abb5bd;
+   border-radius: 4px;
+   font-size: 14px;
+}
+
+.grab {
+   position: absolute;
+   content: "";
+   transform: rotate(5deg);
+}
+
+.grab:hover {
+   cursor: grabbing;
+}
+
+.empty {
+   background-color: #abb5bd;
+   margin-top: 10px;
+}
+
+.message {
+   display: flex;
+   justify-content: space-between;
+}
+
+.delete {
+   position:relative;
+   width:15px;
+   height:15px;
+}
+
+.delete::after {
+   content: "\2A2F";
+   position: absolute;
+   font-size: 20px;
+   color: #758892;
+   top: -5px;
+   right: 2px;
+   z-index: 1000;
+}
+
+.color_labels {
+   height: 7px;
+   margin-bottom: 10px;
+   display: flex;
+}
+
+.label {
+   width: 40px;
+   border-radius: 4px;
+   margin-right: 5px;
+}
+
+.green {
+   background-color: #63b958;
+}
+
+.red {
+   background-color: #e95c4c;
+}
+
+.attachment_img {
+   height: 170px;
+   width: calc(100% + 20px);
+   margin: -10px -10px 10px -10px;
+}
+
+.icons {
+   height: 20px; 
+   margin: 10px 0 0 3px;
+   display: flex;
+   font-family: 'Perpetua';
+   font-size: 14px;
+   color: #758892;
+}
+
+.icon:nth-child(n+2) {
+   margin-left: 10px;  
+}
+
+.icon::before {
+   margin-right: 4px;
+   vertical-align: middle;
+}
+
+.icon.text::before {
+   content: url('../img/text.png');
+}
+
+.like::before {
+   content: url('../img/like.png');
+}
+
+.attachment::before {
+   content: url('../img/clip.png');
+}
+
+.discuss::before {
+   content: url('../img/speech.png');
+}
+
+.checklist::before {
+   content: url('../img/check.png');
+}
+
+.avatars {
+   margin: 10px 0 0 3px;
+   display: flex;
+   justify-content: end;
+}
+
+.avatar {
+   height: 30px;
+   width: 30px;
+   border-radius: 25px;
+   background-size: cover;
+   background-repeat: no-repeat;
+   background-position: center center; 
+}
+
+.person1 {
+   background-image: url('../img/person1.png');
+}
+
+.add_card {
+   margin-top: 15px;
+   font-size: 14px;
+   color: #758892;
+   vertical-align: middle;
+   background-color: #dee2e5;
+   border: none;
+   padding: 0;
+}
+
+.add_card:hover {
+   text-decoration: underline;
+}
+
+.add_card::before {
+   content: "+";
+   display: inline-block;
+   font-size: 22px;
+   margin: 0 5px 0 5px;
+   vertical-align: middle;
+}
+
+.form_group {
+   width: 100%;
+   position: relative;
+}
+
+.card_title {
+   resize: none;
+   width: calc(100% - 20px);
+   border: none;
+   padding: 10px;
+   min-height: 50px;
+   margin-top: 10px;
+   background-color: #ffffff;
+   box-shadow: 0px 1px #abb5bd;
+   border-radius: 4px;
+   font-family: 'Arial';
+   font-size: 14px;
+}
+
+.card_confirm {
+   margin-top: 10px;
+   height: 30px;
+   width: 90px;
+   font-family: 'Arial';
+   font-size: 14px;
+   font-weight: bold;
+   background-color: #63b958;
+   color: #dee2e5;
+   box-shadow: 0px 1px #5a6064;
+   border: none;
+   border-radius: 4px; 
+}
+
+.card_discard::after {
+   content: "\2A2F";
+   position: absolute;
+   font-size: 22px;
+   color: #758892;
+   left: 100px;
+   bottom: 1px;
+}
