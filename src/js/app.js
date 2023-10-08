@@ -1,4 +1,4 @@
-import Widget from './widget';
+import Widget from './Widget';
 
 const widg1 = new Widget('.widget');
 
