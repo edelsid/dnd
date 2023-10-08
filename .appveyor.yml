@@ -11,7 +11,7 @@ cache:
   - '%LOCALAPPDATA%/Yarn'  # кеширование
 
 install:
-  - yarn add  # команда установки зависимостей
+  - yarn install  # команда установки зависимостей
 
 build: off  # отключаем встроенную в appveyor систему сборки
 
