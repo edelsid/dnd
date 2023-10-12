@@ -7,25 +7,16 @@ picture.src = image;
 
 export default class Widget {
   constructor(element) {
-    if (typeof element === 'string') {
-      // eslint-disable-next-line no-param-reassign
-      element = document.querySelector(element);
-    }
     this.element = element;
-
-    this.buttons = document.querySelectorAll('.add_card');
-    this.panels = document.querySelectorAll('.cards');
+    this.draggedEl = null;
+    this.draggedProjection = null;
+    this.cardAreas = document.querySelectorAll('.cards');
 
     this.onClick = this.onClick.bind(this);
     this.onEnter = this.onEnter.bind(this);
-    this.onMouseDown = this.onMouseDown.bind(this);
-
-    this.buttons.forEach((el) => {
-      el.addEventListener('click', this.onClick);
-    });
   }
 
-  loadState() {
+  init() {
     if (localStorage.length !== 0) {
       const toDo = JSON.parse(localStorage.getItem('panel TODO'));
       const inProgress = JSON.parse(localStorage.getItem('panel IN PROGRESS'));
@@ -33,142 +24,135 @@ export default class Widget {
       const cardArr = [];
       cardArr.push(toDo, inProgress, done);
 
-      for (let i = 0; i < this.panels.length; i += 1) {
-        this.panels[i].innerHTML = '';
+      for (let i = 0; i < this.cardAreas.length; i += 1) {
+        this.cardAreas[i].innerHTML = '';
         Object.keys(cardArr[i]).forEach((key) => {
           const newCard = document.createElement('div');
           newCard.className = 'card';
           newCard.innerHTML = cardArr[i][key];
-          this.panels[i].insertAdjacentElement('beforeend', newCard);
+          this.cardAreas[i].insertAdjacentElement('beforeend', newCard);
         });
       }
     }
-  }
-
-  init() {
-    const cards = document.querySelectorAll('.card');
-
-    const deletion = Array.from(document.querySelectorAll('.delete'));
-    deletion.forEach((el) => {
-      el.parentElement.removeChild(el);
-    });
-
-    cards.forEach((el) => {
-      el.addEventListener('mouseenter', this.onEnter);
-      el.addEventListener('mouseleave', Widget.onLeave);
-      el.addEventListener('mousedown', this.onMouseDown);
-    });
   }
 
   onEnter(e) {
-    const deletion = document.createElement('span');
-    const target = e.target.querySelector('.message');
-    target.appendChild(deletion);
-    deletion.classList.add('delete');
-    deletion.addEventListener('click', this.onClick);
-  }
-
-  static onLeave(e) {
-    const target = e.target.querySelector('.message');
-    if (target.firstElementChild && target.firstElementChild.classList.contains('delete')) {
-      target.removeChild(target.firstElementChild);
+    if (e.target.className === 'card') {
+      const deletion = document.createElement('span');
+      const target = e.target.querySelector('.message');
+      target.appendChild(deletion);
+      deletion.classList.add('delete');
+      deletion.addEventListener('click', this.onClick);
+      e.target.addEventListener('mouseleave', Widget.onLeave);
     }
   }
+
+  static onLeave() {
+    const target = document.querySelector('.delete');
+    target.remove();
+  }
+
+  onMouseDown = (e) => {
+    let target;
+    if (e.target.className === 'card') {
+      target = e.target;
+    } else if (e.target.className === 'message'
+      || e.target.className === 'icons'
+      || e.target.className === 'labels'
+      || e.target.className === 'avatars'
+      || e.target.className === 'attachment_img') {
+      target = e.target.closest('.card');
+    }
+    if (e.button === 0 && target) {
+      e.preventDefault();
+      this.shiftX = e.pageX - target.getBoundingClientRect().left;
+      this.shiftY = e.pageY - target.getBoundingClientRect().top + 10;
+      this.setDraggable(target);
+      this.draggedEl.el.style.left = `${e.pageX - this.shiftX}px`;
+      this.draggedEl.el.style.top = `${e.pageY - this.shiftY}px`;
+      document.body.style.cursor = 'grabbing';
+      this.projection(e);
+    }
+  };
+
+  onMouseMove = (e) => {
+    if (this.draggedEl) {
+      const element = this.draggedEl;
+      element.el.style.width = `${this.draggedEl.measurements.width}px`;
+      element.el.style.height = `${this.draggedEl.measurements.height - 10}px`;
+      element.el.style.left = `${e.pageX - this.shiftX}px`;
+      element.el.style.top = `${e.pageY - this.shiftY}px`;
+      element.el.classList.add('grab');
+      document.body.style.cursor = 'grabbing';
+      element.el.style.pointerEvents = 'none';
+
+      this.projection(e);
+    }
+  };
+
+  projection(e) {
+    const { target } = e;
+    const dragged = this.draggedEl;
+    const projection = this.draggedProjection;
+    if (target.classList.contains('card')
+   && !target.classList.contains('projection')) {
+      const { y, height } = target.getBoundingClientRect();
+      const counting = y + height / 2;
+      const position = counting > e.clientY ? 'beforebegin' : 'afterend';
+
+      if (!projection) {
+        this.draggedProjection = dragged.createProjection();
+      } else {
+        projection.remove();
+        target.insertAdjacentElement(position, projection);
+      }
+    }
+  }
+
+  replace() {
+    if (this.draggedProjection) {
+      this.draggedProjection.replaceWith(this.draggedEl.el);
+    }
+  }
+
+  onMouseUp = () => {
+    if (this.draggedEl) {
+      this.draggedEl.el.removeAttribute('style');
+      document.body.style.cursor = '';
+      this.replace();
+      this.draggedEl.el.classList.remove('grab');
+      this.draggedEl = null;
+      this.draggedProjection = null;
+      this.saveState();
+    }
+  };
 
   onClick(e) {
+    if (e.target.classList.contains('card_title')) {
+      return false;
+    }
     e.preventDefault();
     if (e.target.classList.contains('delete')) {
-      e.target.parentNode.parentNode.parentNode.removeChild(e.target.parentNode.parentNode);
+      e.target.parentNode.parentNode.remove();
       this.saveState();
     } else if (e.target.classList.contains('add_card')) {
-      this.formAdd(e.target.parentNode);
+      Widget.formAdd(e.target.parentNode);
     } else if (e.target.classList.contains('card_discard')) {
-      e.target.parentNode.parentNode.parentNode.removeChild(e.target.parentNode.parentNode);
+      e.target.parentNode.parentNode.remove();
     } else if (e.target.classList.contains('card_confirm')) {
-      this.cardAdd(e.target);
+      Widget.cardAdd(e.target);
       this.saveState();
     }
+    return false;
   }
 
-  static emptySpace(node, panel, target) {
-    if (node !== target) {
-      const makeSpace = () => {
-        const empty = panel.querySelector('.empty');
-        if (empty === null) {
-          const space = document.createElement('li');
-          space.className = 'empty';
-          space.style.height = `${target.offsetHeight}px`;
-          panel.insertBefore(space, node);
-
-          const deleteSpace = () => {
-            const spaceToDelete = document.querySelector('.empty');
-            spaceToDelete.parentNode.removeChild(spaceToDelete);
-            node.removeEventListener('mouseenter', makeSpace);
-          };
-          space.addEventListener('mouseleave', deleteSpace);
-        }
-      };
-
-      node.addEventListener('mouseenter', makeSpace);
-    }
-  }
-
-  // eslint-disable-next-line consistent-return
-  onMouseDown(event) {
-    if (event.button === 0) {
-      event.preventDefault();
-      if (event.target.classList.contains('delete')) {
-        this.onClick(event);
-        return false;
-      }
-      const target = event.currentTarget;
-
-      target.style.width = `${target.offsetWidth}px`;
-      target.style.height = `${target.offsetHeight}px`;
-      target.classList.add('grab');
-
-      let mouseUpItem;
-      let panel;
-
-      const onMouseOver = (e) => {
-        target.style.left = `${e.pageX - target.offsetWidth / 2}px`;
-        target.style.top = `${e.pageY - target.offsetHeight / 2}px`;
-
-        this.panels.forEach((area) => {
-          const panelCoord = area.getBoundingClientRect();
-          if (panelCoord.left < e.pageX && panelCoord.right > e.pageX) {
-            panel = area;
-            const nodes = Array.from(area.children);
-            nodes.forEach((node) => {
-              const coord = node.getBoundingClientRect();
-              // eslint-disable-next-line max-len
-              if (coord.left < e.pageX && coord.right > e.pageX && coord.top < e.pageY && coord.bottom > e.pageY) {
-                mouseUpItem = node;
-                Widget.emptySpace(mouseUpItem, panel, target);
-              }
-            });
-          }
-        });
-      };
-
-      const onMouseUp = () => {
-        panel.insertBefore(target, mouseUpItem);
-        target.classList.remove('grab');
-        document.documentElement.removeEventListener('mouseup', onMouseUp);
-        document.documentElement.removeEventListener('mouseover', onMouseOver);
-        this.saveState();
-      };
-
-      document.documentElement.addEventListener('mouseover', onMouseOver);
-      this.panels.forEach((el) => {
-        el.addEventListener('mouseup', onMouseUp);
-      });
-    }
+  setDraggable(node) {
+    this.draggedEl = new Card(node);
   }
 
   saveState() {
     localStorage.clear();
-    this.panels.forEach((el) => {
+    this.cardAreas.forEach((el) => {
       const nodes = {};
       const cards = Array.from(el.children);
       for (let i = 0; i < cards.length; i += 1) {
@@ -178,24 +162,16 @@ export default class Widget {
     });
   }
 
-  cardAdd(el) {
-    const newCard = new Card(el.parentNode.firstElementChild.value);
-    const panel = el.parentNode.parentNode.parentNode;
-    const cardArea = panel.querySelector('.cards');
-    newCard.cardFormation();
-    cardArea.appendChild(newCard.cardElement);
-    panel.removeChild(el.parentNode.parentNode);
-    this.init();
-  }
-
-  formAdd(el) {
+  static formAdd(el) {
     const newForm = new Form();
     newForm.formFormation();
     el.appendChild(newForm.formElement);
+  }
 
-    const discard = el.querySelector('.card_discard');
-    const add = el.querySelector('.card_confirm');
-    discard.addEventListener('click', this.onClick);
-    add.addEventListener('click', this.onClick);
+  static cardAdd(el) {
+    const panel = el.parentNode.parentNode.parentNode;
+    const cardArea = panel.querySelector('.cards');
+    cardArea.appendChild(Card.cardFormation(el.parentNode.firstElementChild.value));
+    el.parentNode.parentNode.remove();
   }
 }

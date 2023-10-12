@@ -64,13 +64,10 @@ body {
    transform: rotate(5deg);
 }
 
-.grab:hover {
-   cursor: grabbing;
-}
-
-.empty {
+.projection {
    background-color: #abb5bd;
    margin-top: 10px;
+   border-radius: 4px;
 }
 
 .message {

@@ -1,11 +1,21 @@
 export default class Card {
-  constructor(title) {
-    this.cardElement = document.createElement('li');
-    this.cardElement.className = 'card';
-    this.title = title;
+  constructor(element) {
+    this.el = element;
+    this.measurements = element.getBoundingClientRect();
   }
 
-  cardFormation() {
-    this.cardElement.innerHTML = `<text class="message">${this.title}</text>`;
+  static cardFormation(content) {
+    const newCard = document.createElement('li');
+    newCard.className = 'card';
+    newCard.innerHTML = `<text class="message">${content}</text>`;
+    return newCard;
+  }
+
+  createProjection() {
+    const projection = document.createElement('li');
+    projection.className = 'projection';
+    projection.style.width = `${this.measurements.width - 10}px`;
+    projection.style.height = `${this.measurements.height}px`;
+    return projection;
   }
 }
