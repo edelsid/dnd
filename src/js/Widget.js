@@ -17,17 +17,18 @@ export default class Widget {
   }
 
   init() {
-    if (localStorage.length !== 0) {
-      const toDo = JSON.parse(localStorage.getItem('panel TODO'));
-      const inProgress = JSON.parse(localStorage.getItem('panel IN PROGRESS'));
-      const done = JSON.parse(localStorage.getItem('panel DONE'));
+    const state = Widget.loadState();
+    if (state !== null) {
+      const toDo = state.TODO;
+      const inProgress = state['IN PROGRESS'];
+      const done = state.DONE;
       const cardArr = [];
       cardArr.push(toDo, inProgress, done);
 
       for (let i = 0; i < this.cardAreas.length; i += 1) {
         this.cardAreas[i].innerHTML = '';
         Object.keys(cardArr[i]).forEach((key) => {
-          const newCard = document.createElement('div');
+          const newCard = document.createElement('li');
           newCard.className = 'card';
           newCard.innerHTML = cardArr[i][key];
           this.cardAreas[i].insertAdjacentElement('beforeend', newCard);
@@ -36,8 +37,12 @@ export default class Widget {
     }
   }
 
+  static loadState() {
+    return JSON.parse(localStorage.getItem('state'));
+  }
+
   onEnter(e) {
-    if (e.target.className === 'card') {
+    if (e.target.className === 'card' && this.draggedEl === null) {
       const deletion = document.createElement('span');
       const target = e.target.querySelector('.message');
       target.appendChild(deletion);
@@ -48,8 +53,12 @@ export default class Widget {
   }
 
   static onLeave() {
-    const target = document.querySelector('.delete');
-    target.remove();
+    const target = Array.from(document.querySelectorAll('.delete'));
+    if (target) {
+      target.forEach((el) => {
+        el.remove();
+      });
+    }
   }
 
   onMouseDown = (e) => {
@@ -92,9 +101,11 @@ export default class Widget {
 
   projection(e) {
     const { target } = e;
+    let panelTarget;
     const dragged = this.draggedEl;
     const projection = this.draggedProjection;
-    if (target.classList.contains('card')
+    if ((target.classList.contains('card')
+    || target.classList.contains('panel'))
    && !target.classList.contains('projection')) {
       const { y, height } = target.getBoundingClientRect();
       const counting = y + height / 2;
@@ -104,7 +115,12 @@ export default class Widget {
         this.draggedProjection = dragged.createProjection();
       } else {
         projection.remove();
-        target.insertAdjacentElement(position, projection);
+        if (target.classList.contains('panel') && target.querySelector('.card') === null) {
+          panelTarget = target.querySelector('.cards');
+          panelTarget.appendChild(projection);
+        } else if (!target.classList.contains('panel')) {
+          target.insertAdjacentElement(position, projection);
+        }
       }
     }
   }
@@ -152,14 +168,16 @@ export default class Widget {
 
   saveState() {
     localStorage.clear();
+    const state = {};
     this.cardAreas.forEach((el) => {
       const nodes = {};
       const cards = Array.from(el.children);
       for (let i = 0; i < cards.length; i += 1) {
         nodes[`key${i}`] = cards[i].innerHTML;
       }
-      localStorage.setItem(`panel ${el.parentElement.firstElementChild.innerText}`, JSON.stringify(nodes));
+      state[el.parentElement.firstElementChild.innerText] = nodes;
     });
+    localStorage.setItem('state', JSON.stringify(state));
   }
 
   static formAdd(el) {

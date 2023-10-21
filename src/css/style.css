@@ -44,8 +44,8 @@ body {
 }
 
 .cards {
-   list-style: none;
    padding: 0;
+   z-index: 1;
 }
 
 .card {
@@ -56,6 +56,7 @@ body {
    box-shadow: 0px 1px #abb5bd;
    border-radius: 4px;
    font-size: 14px;
+   list-style: none;
 }
 
 .grab {
@@ -68,6 +69,7 @@ body {
    background-color: #abb5bd;
    margin-top: 10px;
    border-radius: 4px;
+   list-style: none;
 }
 
 .message {
@@ -182,6 +184,7 @@ body {
    background-color: #dee2e5;
    border: none;
    padding: 0;
+   z-index: 0;
 }
 
 .add_card:hover {

@@ -14,7 +14,7 @@ export default class Card {
   createProjection() {
     const projection = document.createElement('li');
     projection.className = 'projection';
-    projection.style.width = `${this.measurements.width - 10}px`;
+    projection.style.width = `${this.measurements.width}px`;
     projection.style.height = `${this.measurements.height}px`;
     return projection;
   }
